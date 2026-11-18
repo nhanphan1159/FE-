@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+html { min-width: 320px; -webkit-text-size-adjust: 100%; }
+body { min-height: 100vh; min-height: 100dvh; }
+button, input, textarea, select { touch-action: manipulation; }
+@media (max-width: 640px) {
+  .ant-segmented { max-width: 100%; overflow-x: auto; }
+  .ant-segmented-group { flex-wrap: nowrap; }
+}
