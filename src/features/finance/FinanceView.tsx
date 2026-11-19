@@ -125,7 +125,7 @@ export const FinanceView: FC = () => {
     : null;
 
   return (
-    <div className="max-w-6xl mx-auto py-6 px-4">
+    <div className="max-w-6xl mx-auto py-6 px-3 sm:px-4 min-w-0 overflow-x-hidden">
       {/* Top Banner Actions & Total Net Worth */}
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -170,7 +170,7 @@ export const FinanceView: FC = () => {
             Income entry resets for each month; balances in the 6 jars remain cumulative
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full min-w-0 items-center justify-between gap-2 sm:w-auto sm:justify-start">
           <Button
             size="small"
             icon={<LeftOutlined />}

@@ -120,7 +120,7 @@ export const TodoView: FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-6 px-4">
+    <div className="max-w-5xl mx-auto py-4 sm:py-6 px-3 sm:px-4 min-w-0 overflow-x-hidden">
       {/* Date Filter & Control Banner */}
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -131,7 +131,7 @@ export const TodoView: FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
             {/* View Mode Toggle: List vs Calendar */}
             <Segmented
               value={viewMode}
@@ -148,7 +148,7 @@ export const TodoView: FC = () => {
               size="large"
               icon={<PlusOutlined />}
               onClick={() => handleOpenCreateForDate(dayjs().format('YYYY-MM-DD'))}
-              className="bg-primary shadow hover:shadow-md rounded-xl flex items-center justify-center font-medium"
+              className="w-full bg-primary shadow hover:shadow-md rounded-xl flex items-center justify-center font-medium sm:w-auto"
             >
               Add New Task
             </Button>

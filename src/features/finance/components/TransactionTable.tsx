@@ -118,14 +118,14 @@ export const TransactionTable: FC<TransactionTableProps> = ({
             </Tag>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <FilterOutlined className="text-gray-400 text-xs" />
             <span className="text-xs text-gray-500 font-normal">Filter by Jar:</span>
             <Select
               size="small"
               value={selectedJarFilter}
               onChange={(val) => setSelectedJarFilter(val as JarCode | 'ALL')}
-              className="w-48 text-xs"
+              className="w-full max-w-48 text-xs sm:w-48"
               options={[
                 { value: 'ALL', label: 'All Jars (Overview)' },
                 ...jars.map((j) => ({
@@ -145,14 +145,64 @@ export const TransactionTable: FC<TransactionTableProps> = ({
         const groups = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
         return <div className="px-4 pt-4"><h3 className="text-sm font-semibold text-gray-700 mb-2">Spending by Category</h3>{groups.length ? <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{groups.map(([category, amount]) => <div key={category} className="rounded-lg border border-slate-200 px-3 py-2"><div className="text-xs text-gray-500 truncate">{category}</div><div className="font-bold text-rose-600">{formatCurrency(amount)}</div></div>)}</div> : <p className="text-xs text-gray-400">No expenses to summarize.</p>}</div>;
       })()}
-      <Table
-        dataSource={filteredTransactions}
-        columns={columns}
-        rowKey="id"
-        loading={loading}
-        pagination={{ pageSize: 8, size: 'small' }}
-        size="small"
-      />
+      <div className="md:hidden divide-y divide-slate-100">
+        {loading ? (
+          <div className="py-8 text-center text-sm text-gray-400">Loading transactions...</div>
+        ) : filteredTransactions.length === 0 ? (
+          <div className="py-8 text-center text-sm text-gray-400">No transactions for this month.</div>
+        ) : (
+          filteredTransactions.map((record) => (
+            <div key={record.id} className="px-4 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {record.type === 'INCOME' ? (
+                      <Tag color="green" icon={<ArrowUpOutlined />} className="m-0 rounded-full">
+                        Income
+                      </Tag>
+                    ) : (
+                      <Tag color="red" icon={<ArrowDownOutlined />} className="m-0 rounded-full">
+                        Expense
+                      </Tag>
+                    )}
+                    <span className="text-xs text-gray-500">{formatDateTime(record.transactionDate)}</span>
+                  </div>
+                  <div className="mt-2 min-w-0">
+                    <div className="truncate text-sm font-semibold text-gray-800">
+                      {record.category || 'Uncategorized'}
+                    </div>
+                    {record.note && <div className="truncate text-xs text-gray-400">{record.note}</div>}
+                    <div className="mt-1 text-xs font-semibold" style={{ color: record.jar.color }}>
+                      {record.jar.name}
+                    </div>
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <div className={`font-bold ${record.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {record.type === 'INCOME' ? '+' : '-'} {formatCurrency(record.amount)}
+                  </div>
+                  {record.type === 'EXPENSE' && (
+                    <div className="mt-2 flex justify-end gap-1">
+                      <Button size="small" icon={<EditOutlined />} aria-label="Edit expense" onClick={() => onEdit(record)} />
+                      <Button size="small" icon={<HistoryOutlined />} aria-label="View edit history" onClick={() => setHistoryTransaction(record)} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      <div className="hidden md:block">
+        <Table
+          dataSource={filteredTransactions}
+          columns={columns}
+          rowKey="id"
+          loading={loading}
+          pagination={{ pageSize: 8, size: 'small' }}
+          size="small"
+        />
+      </div>
       <Modal
         title={`Expense Edit History${historyTransaction ? ` · ${historyTransaction.category || 'Expense'}` : ''}`}
         open={Boolean(historyTransaction)}

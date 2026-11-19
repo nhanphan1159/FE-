@@ -24,7 +24,7 @@ export const AppLayout: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/70 text-slate-800">
+    <div className="min-h-screen min-w-0 max-w-full overflow-x-hidden bg-slate-100/70 text-slate-800">
       {/* Top Navbar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-xs">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 min-h-16 py-2 flex flex-wrap items-center justify-between gap-2">

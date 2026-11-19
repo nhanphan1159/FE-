@@ -40,7 +40,7 @@ export const PeriodComparison: FC<PeriodComparisonProps> = ({
     <Card
       title={<span className="font-bold text-gray-700">Income vs Expense Comparison</span>}
       extra={
-        <div className="flex items-center gap-2">
+        <div className="flex max-w-full flex-wrap items-center gap-2">
           {groupBy === 'year' && (
             <>
               <Button size="small" icon={<LeftOutlined />} aria-label="Previous year" onClick={() => onYearChange(year - 1)} />
