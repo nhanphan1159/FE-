@@ -1,9 +1,9 @@
-import { useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Modal } from 'antd';
 import { EditOutlined, HistoryOutlined } from '@ant-design/icons';
 import { financeApi } from '@/services/api';
-import { Card, Table, Tag, Select } from 'antd';
+import { Card, Pagination, Table, Tag, Select } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined, FilterOutlined } from '@ant-design/icons';
 import { Transaction, JarCode, Jar, TransactionEdit } from '@/types/finance';
 import { formatCurrency, formatDateTime } from '@/utils/format';
@@ -22,6 +22,8 @@ export const TransactionTable: FC<TransactionTableProps> = ({
   onEdit,
 }) => {
   const [historyTransaction, setHistoryTransaction] = useState<Transaction | null>(null);
+  const [mobilePage, setMobilePage] = useState(1);
+  const mobilePageSize = 8;
   const { data: editHistory = [], isLoading: isHistoryLoading } = useQuery({
     queryKey: ['financeTransactionHistory', historyTransaction?.id],
     queryFn: () => financeApi.getTransactionHistory(historyTransaction!.id),
@@ -33,6 +35,15 @@ export const TransactionTable: FC<TransactionTableProps> = ({
     selectedJarFilter === 'ALL'
       ? transactions
       : transactions.filter((t) => t.jar.type === selectedJarFilter);
+
+  useEffect(() => {
+    setMobilePage(1);
+  }, [selectedJarFilter, transactions]);
+
+  const pagedMobileTransactions = filteredTransactions.slice(
+    (mobilePage - 1) * mobilePageSize,
+    mobilePage * mobilePageSize,
+  );
 
   const columns = [
     {
@@ -137,7 +148,7 @@ export const TransactionTable: FC<TransactionTableProps> = ({
           </div>
         </div>
       }
-      className="rounded-2xl border border-slate-200 shadow-sm"
+      className="w-full max-w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm"
       bodyStyle={{ padding: 0 }}
     >
       {(() => {
@@ -151,7 +162,7 @@ export const TransactionTable: FC<TransactionTableProps> = ({
         ) : filteredTransactions.length === 0 ? (
           <div className="py-8 text-center text-sm text-gray-400">No transactions for this month.</div>
         ) : (
-          filteredTransactions.map((record) => (
+          pagedMobileTransactions.map((record) => (
             <div key={record.id} className="px-4 py-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -193,13 +204,34 @@ export const TransactionTable: FC<TransactionTableProps> = ({
           ))
         )}
       </div>
-      <div className="hidden md:block">
+      {filteredTransactions.length > mobilePageSize && (
+        <div className="transaction-mobile-pagination flex w-full justify-center border-t border-slate-100 px-2 py-3 md:hidden">
+          <Pagination
+            current={mobilePage}
+            pageSize={mobilePageSize}
+            total={filteredTransactions.length}
+            size="small"
+            showSizeChanger={false}
+            onChange={(page) => setMobilePage(page)}
+          />
+        </div>
+      )}
+      <div className="hidden w-full max-w-full md:block">
         <Table
           dataSource={filteredTransactions}
           columns={columns}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 8, size: 'small' }}
+          className="transaction-history-table w-full max-w-full"
+          tableLayout="fixed"
+          scroll={{ x: undefined }}
+          pagination={{
+            pageSize: 8,
+            size: 'small',
+            align: 'center',
+            hideOnSinglePage: true,
+            className: 'transaction-history-pagination',
+          }}
           size="small"
         />
       </div>

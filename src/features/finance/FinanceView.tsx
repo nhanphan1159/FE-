@@ -1,6 +1,6 @@
 import { useState, type FC } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, DatePicker, message, Spin } from 'antd';
+import { Button, DatePicker, message, Segmented, Spin } from 'antd';
 import { PlusCircleFilled, MinusCircleFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { financeApi } from '@/services/api';
@@ -25,6 +25,7 @@ export const FinanceView: FC = () => {
   const [selectedMonth, setSelectedMonth] = useState(dayjs().startOf('month'));
   const [comparisonGroup, setComparisonGroup] = useState<'month' | 'year'>('month');
   const [comparisonYear, setComparisonYear] = useState(dayjs().year());
+  const [activeFinanceSection, setActiveFinanceSection] = useState<'overview' | 'jars' | 'charts' | 'history'>('overview');
 
   // Fetch summary & jars
   const { data: summary, isLoading: isSummaryLoading } = useQuery({
@@ -161,101 +162,88 @@ export const FinanceView: FC = () => {
       </div>
 
       {/* Babylon Principle Banner */}
-      <BabylonCard ffaBalance={ffaBalance} totalAssets={totalBalance} />
-
-      <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="m-0 text-base font-bold text-gray-800">Monthly Income & Expense</h3>
-          <span className="text-xs text-gray-500">
-            Income entry resets for each month; balances in the 6 jars remain cumulative
-          </span>
-        </div>
-        <div className="flex w-full min-w-0 items-center justify-between gap-2 sm:w-auto sm:justify-start">
-          <Button
-            size="small"
-            icon={<LeftOutlined />}
-            aria-label="Previous month"
-            onClick={() => setSelectedMonth((current) => current.subtract(1, 'month'))}
-          />
-          <DatePicker
-            picker="month"
-            value={selectedMonth}
-            onChange={(value) => setSelectedMonth(value || dayjs().startOf('month'))}
-            format="MMMM YYYY"
-            allowClear={false}
-            className="rounded-lg"
-          />
-          <Button
-            size="small"
-            icon={<RightOutlined />}
-            aria-label="Next month"
-            onClick={() => setSelectedMonth((current) => current.add(1, 'month'))}
-          />
-        </div>
+      <div className="mb-4 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+        <Segmented
+          block
+          value={activeFinanceSection}
+          onChange={(value) => setActiveFinanceSection(value as 'overview' | 'jars' | 'charts' | 'history')}
+          options={[
+            { label: 'Tổng quan', value: 'overview' },
+            { label: '6 hũ', value: 'jars' },
+            { label: 'Biểu đồ', value: 'charts' },
+            { label: 'Lịch sử', value: 'history' },
+          ]}
+          className="w-full"
+        />
       </div>
 
-      {(() => {
-        const monthlyIncome = transactions
-          .filter((transaction) => transaction.type === 'INCOME')
-          .reduce((sum, transaction) => sum + transaction.amount, 0);
-        const monthlyExpense = transactions
-          .filter((transaction) => transaction.type === 'EXPENSE')
-          .reduce((sum, transaction) => sum + transaction.amount, 0);
+      {activeFinanceSection === 'overview' && (
+        <>
+          <BabylonCard ffaBalance={ffaBalance} totalAssets={totalBalance} />
 
-        return (
-          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
-              <div className="text-xs font-semibold uppercase text-emerald-600">
-                Income Entered This Month
-              </div>
-              <div className="mt-1 text-xl font-black text-emerald-700">{formatCurrency(monthlyIncome)}</div>
+          <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="m-0 text-base font-bold text-gray-800">Monthly Income & Expense</h3>
+              <span className="text-xs text-gray-500">
+                Income entry resets for each month; balances in the 6 jars remain cumulative
+              </span>
             </div>
-            <div className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3">
-              <div className="text-xs font-semibold uppercase text-rose-600">Expenses This Month</div>
-              <div className="mt-1 text-xl font-black text-rose-700">{formatCurrency(monthlyExpense)}</div>
-            </div>
-            <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-              <div className="text-xs font-semibold uppercase text-blue-600">Monthly Net</div>
-              <div className={`mt-1 text-xl font-black ${monthlyIncome - monthlyExpense >= 0 ? 'text-blue-700' : 'text-rose-700'}`}>
-                {formatCurrency(monthlyIncome - monthlyExpense)}
-              </div>
+            <div className="flex w-full min-w-0 items-center justify-between gap-2 sm:w-auto sm:justify-start">
+              <Button size="small" icon={<LeftOutlined />} aria-label="Previous month" onClick={() => setSelectedMonth((current) => current.subtract(1, 'month'))} />
+              <DatePicker picker="month" value={selectedMonth} onChange={(value) => setSelectedMonth(value || dayjs().startOf('month'))} format="MMMM YYYY" allowClear={false} className="rounded-lg" />
+              <Button size="small" icon={<RightOutlined />} aria-label="Next month" onClick={() => setSelectedMonth((current) => current.add(1, 'month'))} />
             </div>
           </div>
-        );
-      })()}
 
-      <PeriodComparison
-        data={periodComparison}
-        groupBy={comparisonGroup}
-        year={comparisonYear}
-        onGroupByChange={(group) => {
-          setComparisonGroup(group);
-          if (group === 'year') setComparisonYear(selectedMonth.year());
-        }}
-        onYearChange={setComparisonYear}
-      />
+          {(() => {
+            const monthlyIncome = transactions.filter((transaction) => transaction.type === 'INCOME').reduce((sum, transaction) => sum + transaction.amount, 0);
+            const monthlyExpense = transactions.filter((transaction) => transaction.type === 'EXPENSE').reduce((sum, transaction) => sum + transaction.amount, 0);
+            return (
+              <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+                  <div className="text-xs font-semibold uppercase text-emerald-600">Income Entered This Month</div>
+                  <div className="mt-1 text-xl font-black text-emerald-700">{formatCurrency(monthlyIncome)}</div>
+                </div>
+                <div className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3">
+                  <div className="text-xs font-semibold uppercase text-rose-600">Expenses This Month</div>
+                  <div className="mt-1 text-xl font-black text-rose-700">{formatCurrency(monthlyExpense)}</div>
+                </div>
+                <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+                  <div className="text-xs font-semibold uppercase text-blue-600">Monthly Net</div>
+                  <div className={`mt-1 text-xl font-black ${monthlyIncome - monthlyExpense >= 0 ? 'text-blue-700' : 'text-rose-700'}`}>{formatCurrency(monthlyIncome - monthlyExpense)}</div>
+                </div>
+              </div>
+            );
+          })()}
 
-      {/* 6 Jars Overview */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-bold text-gray-800 m-0">The 6 Jars Financial System</h3>
-          <span className="text-xs text-gray-500">
-            Click on any jar to inspect its details and itemized history
-          </span>
-        </div>
-      </div>
+          <PeriodComparison
+            data={periodComparison}
+            groupBy={comparisonGroup}
+            year={comparisonYear}
+            onGroupByChange={(group) => {
+              setComparisonGroup(group);
+              if (group === 'year') setComparisonYear(selectedMonth.year());
+            }}
+            onYearChange={setComparisonYear}
+          />
+        </>
+      )}
 
-      <JarsOverview
-        jars={jars}
-        onOpenExpense={handleOpenExpense}
-        onSelectJar={handleSelectJar}
-      />
+      {activeFinanceSection === 'jars' && (
+        <>
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-gray-800 m-0">The 6 Jars Financial System</h3>
+            <span className="text-xs text-gray-500">Tap a jar to inspect its details and itemized history</span>
+          </div>
+          <JarsOverview jars={jars} onOpenExpense={handleOpenExpense} onSelectJar={handleSelectJar} />
+        </>
+      )}
 
-      {/* Financial Charts */}
-      <FinanceCharts jars={jars} />
+      {activeFinanceSection === 'charts' && <FinanceCharts jars={jars} />}
 
-      {/* Transaction History Table with Jar Filter */}
-      <TransactionTable transactions={transactions} jars={jars} loading={isTxLoading} onEdit={setEditingExpense} />
+      {activeFinanceSection === 'history' && (
+        <TransactionTable transactions={transactions} jars={jars} loading={isTxLoading} onEdit={setEditingExpense} />
+      )}
 
       {/* Jar Detail & History Drawer */}
       <JarDetailDrawer
