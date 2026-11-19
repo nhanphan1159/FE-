@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Personal OS',
   webDir: 'dist',
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     backgroundColor: '#f8fafc',
   },
 };
