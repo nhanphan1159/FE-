@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Todo, CreateTodoInput } from '@/types/todo';
-import { FinancialSummary, AllocateIncomeInput, CreateExpenseInput, Transaction, Jar, JarCode } from '@/types/finance';
+import { FinancialSummary, AllocateIncomeInput, CreateExpenseInput, Transaction, Jar, JarCode, PeriodComparison } from '@/types/finance';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -81,8 +81,13 @@ export const financeApi = {
     return res.data;
   },
 
-  getTransactions: async (params?: { jarType?: JarCode; limit?: number }) => {
+  getTransactions: async (params?: { jarType?: JarCode; limit?: number; month?: string; year?: string }) => {
     const res = await api.get<Transaction[]>('/finance/transactions', { params });
+    return res.data;
+  },
+
+  getPeriodComparison: async (params: { groupBy: 'month' | 'year'; year?: string; period?: string }) => {
+    const res = await api.get<PeriodComparison[]>('/finance/period-comparison', { params });
     return res.data;
   },
 };

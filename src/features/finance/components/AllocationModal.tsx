@@ -1,5 +1,6 @@
 import { useState, type FC } from 'react';
-import { Modal, Form, InputNumber, Input } from 'antd';
+import { Modal, Form, InputNumber, Input, DatePicker } from 'antd';
+import dayjs from 'dayjs';
 import { Jar, AllocateIncomeInput } from '@/types/finance';
 import { formatCurrency } from '@/utils/format';
 
@@ -25,6 +26,7 @@ export const AllocationModal: FC<AllocationModalProps> = ({
       onSubmit({
         totalAmount: values.totalAmount,
         note: values.note,
+        transactionDate: values.transactionDate?.toISOString(),
       });
       form.resetFields();
       setTotalAmount(0);
@@ -70,6 +72,10 @@ export const AllocationModal: FC<AllocationModalProps> = ({
 
         <Form.Item name="note" label="Income Source / Note (e.g. Monthly Salary, Freelance project)">
           <Input placeholder="Salary, bonus, dividends, consulting..." className="rounded-lg" />
+        </Form.Item>
+
+        <Form.Item name="transactionDate" label="Allocation Date" initialValue={dayjs()}>
+          <DatePicker className="w-full rounded-lg" format="MMM DD, YYYY" allowClear={false} />
         </Form.Item>
 
         {/* Live preview */}

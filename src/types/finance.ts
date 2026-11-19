@@ -45,6 +45,15 @@ export interface AllocateIncomeInput {
   totalAmount: number;
   note?: string;
   customAllocations?: Record<string, number>;
+  transactionDate?: string;
+}
+
+export interface PeriodComparison {
+  label: string;
+  period: string;
+  income: number;
+  expense: number;
+  net: number;
 }
 
 export interface CreateExpenseInput {
