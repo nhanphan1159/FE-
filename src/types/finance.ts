@@ -63,3 +63,42 @@ export interface CreateExpenseInput {
   note?: string;
   transactionDate?: string;
 }
+
+export interface Investment {
+  id: string;
+  symbol: string;
+  name: string;
+  quantity: number;
+  averageCost: number;
+  currentPrice: number;
+  targetPrice?: number | null;
+  market: string;
+  sector?: string | null;
+  note?: string | null;
+  costBasis: number;
+  marketValue: number;
+  profit: number;
+  profitPercentage: number;
+  targetDifference?: number | null;
+  upsidePercentage?: number | null;
+  analysis: string;
+}
+
+export interface AiStockRecommendation {
+  symbol: string;
+  action: 'BUY' | 'HOLD' | 'WATCH' | 'AVOID';
+  confidence: number;
+  trend: 'UP' | 'SIDEWAYS' | 'DOWN';
+  horizon: 'SHORT_TERM' | 'MEDIUM_TERM' | 'LONG_TERM';
+  estimatedChangePercentLow: number;
+  estimatedChangePercentHigh: number;
+  reasoning: string;
+  risks: string[];
+  isHeld: boolean;
+}
+
+export interface AiPortfolioAnalysis {
+  summary: string;
+  recommendations: AiStockRecommendation[];
+  marketContext?: string;
+}

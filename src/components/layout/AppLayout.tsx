@@ -17,9 +17,11 @@ export const AppLayout: FC = () => {
       queryClient.invalidateQueries({ queryKey: ['financeSummary'] });
       queryClient.invalidateQueries({ queryKey: ['financeTransactions'] });
       queryClient.invalidateQueries({ queryKey: ['financePeriodComparison'] });
+      queryClient.invalidateQueries({ queryKey: ['financeInvestments'] });
       queryClient.refetchQueries({ queryKey: ['financeSummary'] });
       queryClient.refetchQueries({ queryKey: ['financeTransactions'] });
       queryClient.refetchQueries({ queryKey: ['financePeriodComparison'] });
+      queryClient.refetchQueries({ queryKey: ['financeInvestments'] });
     }
   };
 

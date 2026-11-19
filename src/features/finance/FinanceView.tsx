@@ -14,6 +14,7 @@ import { TransactionTable } from '@/features/finance/components/TransactionTable
 import { JarDetailDrawer } from '@/features/finance/components/JarDetailDrawer';
 import { formatCurrency } from '@/utils/format';
 import { PeriodComparison } from '@/features/finance/components/PeriodComparison';
+import { InvestmentPortfolio, type InvestmentInput } from '@/features/finance/components/InvestmentPortfolio';
 
 export const FinanceView: FC = () => {
   const queryClient = useQueryClient();
@@ -25,7 +26,7 @@ export const FinanceView: FC = () => {
   const [selectedMonth, setSelectedMonth] = useState(dayjs().startOf('month'));
   const [comparisonGroup, setComparisonGroup] = useState<'month' | 'year'>('month');
   const [comparisonYear, setComparisonYear] = useState(dayjs().year());
-  const [activeFinanceSection, setActiveFinanceSection] = useState<'overview' | 'jars' | 'charts' | 'history'>('overview');
+  const [activeFinanceSection, setActiveFinanceSection] = useState<'overview' | 'jars' | 'charts' | 'history' | 'investments'>('overview');
 
   // Fetch summary & jars
   const { data: summary, isLoading: isSummaryLoading } = useQuery({
@@ -47,6 +48,11 @@ export const FinanceView: FC = () => {
         ? selectedMonth.format('YYYY-MM')
         : String(comparisonYear),
     }),
+  });
+
+  const { data: investments = [], isLoading: isInvestmentsLoading } = useQuery({
+    queryKey: ['financeInvestments'],
+    queryFn: () => financeApi.getInvestments(),
   });
 
   // Mutations
@@ -95,6 +101,33 @@ export const FinanceView: FC = () => {
       setIsExpenseModalOpen(false);
     },
     onError: () => message.error('Failed to log expense.'),
+  });
+
+  const investmentMutation = useMutation({
+    mutationFn: (data: InvestmentInput) => financeApi.createInvestment(data),
+    onSuccess: async () => {
+      message.success('Investment added to portfolio.');
+      await queryClient.invalidateQueries({ queryKey: ['financeInvestments'] });
+      await queryClient.refetchQueries({ queryKey: ['financeInvestments'] });
+    },
+  });
+
+  const updateInvestmentMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: InvestmentInput }) => financeApi.updateInvestment(id, data),
+    onSuccess: async () => {
+      message.success('Investment updated.');
+      await queryClient.invalidateQueries({ queryKey: ['financeInvestments'] });
+      await queryClient.refetchQueries({ queryKey: ['financeInvestments'] });
+    },
+  });
+
+  const deleteInvestmentMutation = useMutation({
+    mutationFn: (id: string) => financeApi.deleteInvestment(id),
+    onSuccess: async () => {
+      message.success('Investment removed.');
+      await queryClient.invalidateQueries({ queryKey: ['financeInvestments'] });
+      await queryClient.refetchQueries({ queryKey: ['financeInvestments'] });
+    },
   });
 
   const jars = summary?.jars || [];
@@ -166,12 +199,13 @@ export const FinanceView: FC = () => {
         <Segmented
           block
           value={activeFinanceSection}
-          onChange={(value) => setActiveFinanceSection(value as 'overview' | 'jars' | 'charts' | 'history')}
+          onChange={(value) => setActiveFinanceSection(value as 'overview' | 'jars' | 'charts' | 'history' | 'investments')}
           options={[
-            { label: 'Tổng quan', value: 'overview' },
-            { label: '6 hũ', value: 'jars' },
-            { label: 'Biểu đồ', value: 'charts' },
-            { label: 'Lịch sử', value: 'history' },
+            { label: 'Overview', value: 'overview' },
+            { label: '6 Jars', value: 'jars' },
+            { label: 'Charts', value: 'charts' },
+            { label: 'History', value: 'history' },
+            { label: 'Investments', value: 'investments' },
           ]}
           className="w-full"
         />
@@ -243,6 +277,17 @@ export const FinanceView: FC = () => {
 
       {activeFinanceSection === 'history' && (
         <TransactionTable transactions={transactions} jars={jars} loading={isTxLoading} onEdit={setEditingExpense} />
+      )}
+
+      {activeFinanceSection === 'investments' && (
+        <InvestmentPortfolio
+          investments={investments}
+          loading={isInvestmentsLoading}
+          onCreate={(data) => investmentMutation.mutate(data)}
+          onUpdate={(id, data) => updateInvestmentMutation.mutate({ id, data })}
+          onDelete={(id) => deleteInvestmentMutation.mutate(id)}
+          onAnalyze={(symbols) => financeApi.analyzeInvestments(symbols)}
+        />
       )}
 
       {/* Jar Detail & History Drawer */}

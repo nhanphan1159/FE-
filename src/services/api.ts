@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Todo, CreateTodoInput } from '@/types/todo';
-import { FinancialSummary, AllocateIncomeInput, CreateExpenseInput, Transaction, Jar, JarCode, PeriodComparison } from '@/types/finance';
+import { FinancialSummary, AllocateIncomeInput, CreateExpenseInput, Transaction, Jar, JarCode, PeriodComparison, Investment, AiPortfolioAnalysis } from '@/types/finance';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -88,6 +88,31 @@ export const financeApi = {
 
   getPeriodComparison: async (params: { groupBy: 'month' | 'year'; year?: string; period?: string }) => {
     const res = await api.get<PeriodComparison[]>('/finance/period-comparison', { params });
+    return res.data;
+  },
+
+  getInvestments: async () => {
+    const res = await api.get<Investment[]>('/finance/investments');
+    return res.data;
+  },
+
+  createInvestment: async (data: Omit<Investment, 'id' | 'costBasis' | 'marketValue' | 'profit' | 'profitPercentage' | 'targetDifference' | 'upsidePercentage' | 'analysis'>) => {
+    const res = await api.post<Investment>('/finance/investments', data);
+    return res.data;
+  },
+
+  updateInvestment: async (id: string, data: Omit<Investment, 'id' | 'costBasis' | 'marketValue' | 'profit' | 'profitPercentage' | 'targetDifference' | 'upsidePercentage' | 'analysis'>) => {
+    const res = await api.patch<Investment>(`/finance/investments/${id}`, data);
+    return res.data;
+  },
+
+  deleteInvestment: async (id: string) => {
+    const res = await api.delete(`/finance/investments/${id}`);
+    return res.data;
+  },
+
+  analyzeInvestments: async (symbols?: string[]) => {
+    const res = await api.post<AiPortfolioAnalysis>('/finance/ai/analyze', { symbols });
     return res.data;
   },
 };
